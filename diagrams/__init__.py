@@ -86,6 +86,7 @@ class Diagram:
         autolabel: bool = False,
         show: bool = True,
         strict: bool = False,
+        to_render: bool = False,
         graph_attr: Optional[dict] = None,
         node_attr: Optional[dict] = None,
         edge_attr: Optional[dict] = None,
@@ -100,6 +101,7 @@ class Diagram:
         :param curvestyle: Curve bending style. One of "ortho" or "curved".
         :param outformat: Output file format. Default is 'png'.
         :param show: Open generated image after save if true, just only save otherwise.
+        :param to_render: Whether to generate the output files
         :param graph_attr: Provide graph_attr dot config attributes.
         :param node_attr: Provide node_attr dot config attributes.
         :param edge_attr: Provide edge_attr dot config attributes.
@@ -111,6 +113,7 @@ class Diagram:
             node_attr = {}
         if edge_attr is None:
             edge_attr = {}
+        self.to_render = to_render
         self.name = name
         if not name and not filename:
             filename = "diagrams_image"
@@ -164,7 +167,6 @@ class Diagram:
     def __exit__(self, exc_type, exc_value, traceback):
         self.render()
         # Remove the graphviz file leaving only the image.
-        os.remove(self.filename)
         setdiagram(None)
 
     def _repr_png_(self):
@@ -192,11 +194,13 @@ class Diagram:
         self.dot.subgraph(dot)
 
     def render(self) -> None:
-        if isinstance(self.outformat, list):
-            for one_format in self.outformat:
-                self.dot.render(format=one_format, view=self.show, quiet=True)
-        else:
-            self.dot.render(format=self.outformat, view=self.show, quiet=True)
+        if self.to_render:
+            if isinstance(self.outformat, list):
+                for one_format in self.outformat:
+                    self.dot.render(format=one_format, view=self.show, quiet=True)
+            else:
+                self.dot.render(format=self.outformat, view=self.show, quiet=True)
+            os.remove(self.filename)
 
 
 class Cluster:
